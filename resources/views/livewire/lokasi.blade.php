@@ -236,14 +236,9 @@ new class extends Component {
                         </div>
 
                         <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Menampilkan {{ $lokasis->firstItem() }} sampai {{ $lokasis->lastItem() }} dari {{ $lokasis->total() }} data
+                        <div class="justify-content-between mt-3">
+                                    {{ $lokasis->links() }}
                             </div>
-                            <div>
-                                {{ $lokasis->links('pagination::bootstrap-4') }}
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

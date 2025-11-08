@@ -333,13 +333,8 @@ new class extends Component {
                         </div>
 
                         <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Menampilkan {{ $sites->firstItem() }} sampai {{ $sites->lastItem() }} dari {{ $sites->total() }} data
-                            </div>
-                            <div>
-                                {{ $sites->links('pagination::bootstrap-4') }}
-                            </div>
+                        <div class="justify-content-between mt-3">
+                            {{ $sites->links() }}
                         </div>
                     </div>
                 </div>
@@ -442,9 +437,9 @@ new class extends Component {
                 </div>
                 <div class="modal-body">
                     @if (session()->has('error'))
-                        <div class="alert alert-danger" role="alert">
-                            {{ session('error') }}
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        {{ session('error') }}
+                    </div>
                     @endif
                     <div class="form-group">
                         <label>Aksi Retase</label>
@@ -464,7 +459,7 @@ new class extends Component {
                         <label for="depositJumlahRetase">Jumlah Retase</label>
                         <input type="number" id="depositJumlahRetase" class="form-control @error('depositJumlahRetase') is-invalid @enderror" wire:model="depositJumlahRetase" min="0">
                         @error('depositJumlahRetase')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         <small class="text-muted">Isi angka retase untuk ditambah/dikurangi.</small>
                     </div>
@@ -489,7 +484,7 @@ new class extends Component {
                         <label for="depositJumlahDeposit">Jumlah Deposit</label>
                         <input type="number" id="depositJumlahDeposit" class="form-control @error('depositJumlahDeposit') is-invalid @enderror" wire:model="depositJumlahDeposit" min="0">
                         @error('depositJumlahDeposit')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         <small class="text-muted">Isi angka deposit untuk ditambah/dikurangi.</small>
                     </div>
