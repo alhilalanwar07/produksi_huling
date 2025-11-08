@@ -50,17 +50,117 @@ new class extends Component {
                         </span>
                         <h4 class="text-section">Masters</h4>
                     </li>
-                    <li class="nav-item {{ Route::is('customers.index') ? 'active text-info' : '' }}">
-                        <a class="nav-link" href="{{ route('customers.index') }}" >
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
                             <i class="fas fa-address-book"></i>
-                            <p>Manajemen Customers</p>
+                            <p>Data Karyawan</p>
+                        </a>
+                    </li>
+                    <!-- data unit, data mitra, data lokasi, data tongkang, type unit -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-truck"></i>
+                            <p>Data Unit</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-handshake"></i>
+                            <p>Data Mitra</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-map-marker-alt"></i>
+                            <p>Data Lokasi</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-ship"></i>
+                            <p>Data Tongkang</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-cogs"></i>
+                            <p>Type Unit</p>
                         </a>
                     </li>
                     <li class="nav-section">
                         <span class="sidebar-mini-icon">
                             <i class="fa fa-ellipsis-h"></i>
                         </span>
-                        <h4 class="text-section">Proses</h4>
+                        <h4 class="text-section">DATA PRODUKSI</h4>
+                    </li>
+                    <!-- PMS (dropdown), PERUSDA (dropdown), Barging, Time Sheat, Fuel -->
+                    <!-- PMS dropdown -->
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#pmsSubmenu" class="nav-link" aria-expanded="false">
+                            <i class="fas fa-file-contract"></i>
+                            <p>PMS</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="pmsSubmenu">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Sub-menu PMS 1</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Sub-menu PMS 2</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <!-- PERUSDA dropdown -->
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#perusdaSubmenu" class="nav-link" aria-expanded="false">
+                            <i class="fas fa-file-alt"></i>
+                            <p>PERUSDA</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="perusdaSubmenu">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Sub-menu PERUSDA 1</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Sub-menu PERUSDA 2</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-ship"></i>
+                            <p>Barging</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-clock"></i>
+                            <p>Time Sheat</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" >
+                            <i class="fas fa-gas-pump"></i>
+                            <p>Fuel</p>
+                        </a>
+                    </li>
+                    <li class="nav-section">
+                        <span class="sidebar-mini-icon">
+                            <i class="fa fa-ellipsis-h"></i>
+                        </span>
+                        <h4 class="text-section">SETTINGS</h4>
                     </li>
                     @if(auth()->user()->role == 'admin')
                     <li class="nav-item {{ Route::is('admin.manajemen-user') ? 'active text-info' : '' }}">
