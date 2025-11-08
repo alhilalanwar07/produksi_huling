@@ -38,8 +38,8 @@ new class extends Component {
         <div class="sidebar-wrapper scrollbar scrollbar-inner">
             <div class="sidebar-content">
                 <ul class="nav nav-secondary">
-                    <li class="nav-item {{ Route::is('home') ? 'active text-info' : '' }}">
-                        <a class="nav-link" href="{{ route('home') }}" >
+                    <li class="nav-item {{ Route::is('admin.dashboard') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.dashboard') }}" >
                             <i class="fas fa-home"></i>
                             <p>Dashboard</p>
                         </a>
@@ -50,39 +50,39 @@ new class extends Component {
                         </span>
                         <h4 class="text-section">Masters</h4>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.karyawan') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.karyawan') }}" >
                             <i class="fas fa-address-book"></i>
                             <p>Data Karyawan</p>
                         </a>
                     </li>
                     <!-- data unit, data mitra, data lokasi, data tongkang, type unit -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.unit') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.unit') }}" >
                             <i class="fas fa-truck"></i>
                             <p>Data Unit</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.mitra') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.mitra') }}" >
                             <i class="fas fa-handshake"></i>
                             <p>Data Mitra</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.lokasi') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.lokasi') }}" >
                             <i class="fas fa-map-marker-alt"></i>
                             <p>Data Lokasi</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.tongkang') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.tongkang') }}" >  
                             <i class="fas fa-ship"></i>
                             <p>Data Tongkang</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.type-unit') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.type-unit') }}" >     
                             <i class="fas fa-cogs"></i>
                             <p>Type Unit</p>
                         </a>
@@ -170,8 +170,8 @@ new class extends Component {
                         </a>
                     </li>
                     @endif
-                    <li class="nav-item {{ Route::is('profil') ? 'active text-info' : '' }}">
-                        <a class="nav-link" href="{{ route('profil') }}" >
+                    <li class="nav-item {{ Route::is('admin.profil') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.profil') }}" >
                             <i class="fas fa-user"></i>
                             <p>Profil</p>
                         </a>

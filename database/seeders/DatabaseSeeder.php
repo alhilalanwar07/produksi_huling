@@ -13,16 +13,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Buat akun admin default jika belum ada
+        User::query()->firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin',
+                'role' => 'admin',
+                'password' => bcrypt('12345678'),
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'role' => 'admin',
-            'password' => bcrypt('12345678'),
+        // Panggil seeders untuk master data
+        $this->call([
+            JabatanSeeder::class,
+            DevisiSeeder::class,
+            PendidikanSeeder::class,
+            AgamaSeeder::class,
+            KaryawanSeeder::class,
         ]);
-
-        // buat 10 user dummy
-        // User::factory(10)->create();
     }
 }
