@@ -7,7 +7,9 @@ use Livewire\Volt\Volt;
 Auth::routes(['register' => false, 'reset' => false]);
 
 // jika ke /, redirect ke /login
-Route::redirect('/', '/login');
+Route::get('/', function () {
+    return redirect()->route('admin.dashboard');
+});
 
 
 Route::middleware('auth')->prefix('admin')->group(function () {
@@ -23,4 +25,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Volt::route('tongkang', 'tongkang')->name('admin.tongkang');
     Volt::route('type-unit', 'type-unit')->name('admin.type-unit');
     Volt::route('time-sheat', 'time-sheat')->name('admin.time-sheat');
+    Volt::route('fuel', 'fuel')->name('admin.fuel');
+    Volt::route('breakdown', 'breakdown')->name('admin.unit.breakdown');
 });

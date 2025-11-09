@@ -275,6 +275,12 @@ new class extends Component {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
+                    <a href="#">Produksi</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
                     <a href="#">Data Time Sheet</a>
                 </li>
             </ul>

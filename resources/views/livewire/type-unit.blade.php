@@ -137,6 +137,12 @@ new class extends Component {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
+                    <a href="#">Masters</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
                     <a href="#">Data Tipe Unit</a>
                 </li>
             </ul>

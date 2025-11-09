@@ -149,8 +149,8 @@ new class extends Component {
                             <p>Time Sheat</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.fuel') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.fuel') }}" >
                             <i class="fas fa-gas-pump"></i>
                             <p>Fuel</p>
                         </a>
@@ -161,22 +161,27 @@ new class extends Component {
                         </span>
                         <h4 class="text-section">DATA UNIT</h4>
                     </li>
-                    <li class="nav-item">
-                        <a data-bs-toggle="collapse" href="#unitSubmenu" class="nav-link" aria-expanded="false">
+                    <li class="nav-item {{ Route::is('admin.unit.*') ? 'active submenu' : '' }}">
+                        <a data-bs-toggle="collapse" href="#unitSubmenu" class="nav-link" aria-expanded="{{ Route::is('admin.unit.*') ? 'true' : 'false' }}">
                             <i class="fas fa-truck"></i>
-                            <p>UNIT</p>
+                            <p>Unit</p>
                             <span class="caret"></span>
                         </a>
-                        <div class="collapse" id="unitSubmenu">
+                        <div class="collapse {{ Route::is('admin.unit.*') ? 'show' : '' }}" id="unitSubmenu">
                             <ul class="nav nav-collapse">
-                                <li>
-                                    <a class="nav-link" href="#">
-                                        <span class="sub-item">Sub-menu UNIT 1</span>
+                                <li class="{{ Route::is('admin.unit.breakdown') ? 'active text-info' : '' }}">
+                                    <a class="nav-link" href="{{ route('admin.unit.breakdown') }}">
+                                        <span class="sub-item">Breakdown</span>
                                     </a>
                                 </li>
-                                <li>
+                                <li class="">
                                     <a class="nav-link" href="#">
-                                        <span class="sub-item">Sub-menu UNIT 2</span>
+                                        <span class="sub-item">Maintenance</span>
+                                    </a>
+                                </li>
+                                <li class="">
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Performance</span>
                                     </a>
                                 </li>
                             </ul>

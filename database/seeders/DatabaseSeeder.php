@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             JenisUnitSeeder::class,
             TimeSheetSeeder::class,
             UnitSeeder::class,
+            FuelSeeder::class,
         ]);
     }
 }
