@@ -192,8 +192,8 @@ new class extends Component {
 
                         <!-- Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
+                            <table class="table table-striped table-hover table-bordered table-timesheet">
+                                <thead class="thead-dark">
                                     <tr>
                                         <th wire:click="sortBy('jenis_alat')" style="cursor: pointer;">
                                             Jenis Alat

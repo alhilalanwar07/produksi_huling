@@ -22,4 +22,5 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Volt::route('lokasi', 'lokasi')->name('admin.lokasi');
     Volt::route('tongkang', 'tongkang')->name('admin.tongkang');
     Volt::route('type-unit', 'type-unit')->name('admin.type-unit');
+    Volt::route('time-sheat', 'time-sheat')->name('admin.time-sheat');
 });

@@ -243,8 +243,8 @@ new class extends Component {
 
                         <!-- Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
+                            <table class="table table-striped table-hover table-bordered table-timesheet">
+                                <thead class="thead-dark">
                                     <tr>
                                         <th wire:click="sortBy('nomor_lambung')" style="cursor: pointer;">
                                             Nomor Lambung
@@ -256,9 +256,6 @@ new class extends Component {
                                         <th>Tipe Unit</th>
                                         <th>Jenis Unit</th>
                                         <th>Site</th>
-                                        <th>Nomor Polisi</th>
-                                        <th>Nomor Rangka</th>
-                                        <th>Nomor Mesin</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -270,9 +267,6 @@ new class extends Component {
                                         <td>{{ $unit->typeUnit->jenis_alat ?? '-' }}</td>
                                         <td>{{ $unit->jenisUnit->nama_jenis ?? '-' }}</td>
                                         <td>{{ $unit->site->nama_site ?? '-' }}</td>
-                                        <td>{{ $unit->nomor_polisi }}</td>
-                                        <td>{{ $unit->nomor_rangka }}</td>
-                                        <td>{{ $unit->nomor_mesin }}</td>
                                         <td>
                                             <button wire:click="edit({{ $unit->id }})" class="btn btn-warning btn-sm mr-1 mb-1">
                                                 <i class="fas fa-edit"></i>
@@ -369,12 +363,14 @@ new class extends Component {
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="site_id">Site</label>
-                                    <select id="site_id" class="form-control @error('site_id') is-invalid @enderror" wire:model="site_id">
-                                        <option value="">-</option>
-                                        @foreach($sites as $s)
-                                            <option value="{{ $s->id }}">{{ $s->nama_site }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div wire:ignore>
+                                        <select id="site_id" class="form-control @error('site_id') is-invalid @enderror" wire:model="site_id">
+                                            <option value="">-</option>
+                                            @foreach($sites as $s)
+                                                <option value="{{ $s->id }}">{{ $s->nama_site }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('site_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
@@ -481,14 +477,25 @@ document.addEventListener('livewire:initialized', () => {
                 comp && comp.set('type_unit_id', val);
             });
         }
+        // Site
+        const $s = jQuery('#site_id');
+        if ($s.length && !$s.hasClass('select2-hidden-accessible')) {
+            $s.select2({ width: '100%', dropdownParent: $modal });
+            $s.on('change', function () {
+                const val = jQuery(this).val();
+                comp && comp.set('site_id', val);
+            });
+        }
     }
 
     function destroySelect2() {
         if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') return;
         const $k = jQuery('#karyawan_id');
         const $t = jQuery('#type_unit_id');
+        const $s = jQuery('#site_id');
         if ($k.length && $k.hasClass('select2-hidden-accessible')) $k.select2('destroy');
         if ($t.length && $t.hasClass('select2-hidden-accessible')) $t.select2('destroy');
+        if ($s.length && $s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
     }
 
     // Event dari Livewire untuk open/close modal

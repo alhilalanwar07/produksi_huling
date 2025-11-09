@@ -93,7 +93,6 @@ new class extends Component {
                         </span>
                         <h4 class="text-section">DATA PRODUKSI</h4>
                     </li>
-                    <!-- PMS (dropdown), PERUSDA (dropdown), Barging, Time Sheat, Fuel -->
                     <!-- PMS dropdown -->
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#pmsSubmenu" class="nav-link" aria-expanded="false">
@@ -144,8 +143,8 @@ new class extends Component {
                             <p>Barging</p>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.time-sheat') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.time-sheat') }}" >
                             <i class="fas fa-clock"></i>
                             <p>Time Sheat</p>
                         </a>
@@ -155,6 +154,33 @@ new class extends Component {
                             <i class="fas fa-gas-pump"></i>
                             <p>Fuel</p>
                         </a>
+                    </li>
+                    <li class="nav-section">
+                        <span class="sidebar-mini-icon">
+                            <i class="fa fa-ellipsis-h"></i>
+                        </span>
+                        <h4 class="text-section">DATA UNIT</h4>
+                    </li>
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#unitSubmenu" class="nav-link" aria-expanded="false">
+                            <i class="fas fa-truck"></i>
+                            <p>UNIT</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="unitSubmenu">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Sub-menu UNIT 1</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" href="#">
+                                        <span class="sub-item">Sub-menu UNIT 2</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                     <li class="nav-section">
                         <span class="sidebar-mini-icon">

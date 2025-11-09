@@ -293,9 +293,9 @@ new class extends Component {
 
                         <div class="">
                             <!-- Table -->
-                            <div class="table-responsive" style="max-height: 100vh; overflow-y: auto;">
-                                <table class="table table-striped table-hover">
-                                    <thead>
+                            <div class="table-responsive">
+                            <table class="table table-striped table-hover table-bordered table-timesheet">
+                                <thead class="thead-dark">
                                         <tr>
                                             <th wire:click="sortBy('nama_karyawan')" style="cursor: pointer;">
                                                 Nama Karyawan

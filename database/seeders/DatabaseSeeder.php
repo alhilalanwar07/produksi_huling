@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             TongkangSeeder::class,
             TypeUnitSeeder::class,
             JenisUnitSeeder::class,
+            TimeSheetSeeder::class,
             UnitSeeder::class,
         ]);
     }
