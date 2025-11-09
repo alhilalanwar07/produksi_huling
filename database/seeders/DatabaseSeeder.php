@@ -31,6 +31,9 @@ class DatabaseSeeder extends Seeder
             AgamaSeeder::class,
             KaryawanSeeder::class,
             TongkangSeeder::class,
+            TypeUnitSeeder::class,
+            JenisUnitSeeder::class,
+            UnitSeeder::class,
         ]);
     }
 }
