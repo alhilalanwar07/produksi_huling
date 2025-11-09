@@ -72,6 +72,7 @@ new class extends Component {
     {
         $this->resetForm();
         $this->showModal = true;
+        $this->dispatch('unit-modal-opened');
     }
 
     public function edit($id)
@@ -87,6 +88,7 @@ new class extends Component {
         $this->nomor_rangka = $u->nomor_rangka;
         $this->nomor_mesin = $u->nomor_mesin;
         $this->showModal = true;
+        $this->dispatch('unit-modal-opened');
     }
 
     public function save()
@@ -102,10 +104,17 @@ new class extends Component {
             }
             $this->resetForm();
             $this->showModal = false;
+            $this->dispatch('unit-modal-closed');
         } catch (\Throwable $e) {
             Log::error('Gagal menyimpan unit: ' . $e->getMessage());
             session()->flash('error', 'Terjadi kesalahan saat menyimpan data.');
         }
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->dispatch('unit-modal-closed');
     }
 
     public function confirmDelete($id)
@@ -295,12 +304,12 @@ new class extends Component {
 
     <!-- Modal Tambah/Edit -->
     @if($showModal)
-    <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal fade show" id="unitModal" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ $editingId ? 'Edit' : 'Tambah' }} Unit</h5>
-                    <button type="button" class="close" wire:click="$set('showModal', false)">
+                    <button type="button" class="close" wire:click="closeModal">
                         <span>&times;</span>
                     </button>
                 </div>
@@ -317,24 +326,28 @@ new class extends Component {
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="karyawan_id">Driver</label>
-                                    <select id="karyawan_id" class="form-control @error('karyawan_id') is-invalid @enderror" wire:model="karyawan_id">
-                                        <option value="">-</option>
-                                        @foreach($drivers as $d)
-                                            <option value="{{ $d->id }}">{{ $d->nama_karyawan }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div wire:ignore>
+                                        <select id="karyawan_id" class="form-control @error('karyawan_id') is-invalid @enderror" wire:model="karyawan_id">
+                                            <option value="">-</option>
+                                            @foreach($drivers as $d)
+                                                <option value="{{ $d->id }}">{{ $d->nama_karyawan }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('karyawan_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="type_unit_id">Tipe Unit</label>
-                                    <select id="type_unit_id" class="form-control @error('type_unit_id') is-invalid @enderror" wire:model="type_unit_id">
-                                        <option value="">-</option>
-                                        @foreach($typeUnits as $tu)
-                                            <option value="{{ $tu->id }}">{{ $tu->jenis_alat }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div wire:ignore>
+                                        <select id="type_unit_id" class="form-control @error('type_unit_id') is-invalid @enderror" wire:model="type_unit_id">
+                                            <option value="">-</option>
+                                            @foreach($typeUnits as $tu)
+                                                <option value="{{ $tu->id }}">{{ $tu->jenis_alat }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('type_unit_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
@@ -393,7 +406,7 @@ new class extends Component {
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" wire:click="$set('showModal', false)">Batal</button>
+                    <button type="button" class="btn btn-secondary" wire:click="closeModal">Batal</button>
                     <button type="button" class="btn btn-primary" wire:click="save">Simpan</button>
                 </div>
             </div>
@@ -434,3 +447,69 @@ new class extends Component {
     </div>
     @endif
 </div>
+
+<!-- Inisialisasi Select2 untuk dropdown di modal Unit -->
+<script>
+// Pastikan jQuery dan Select2 sudah dimuat di layout Anda
+document.addEventListener('livewire:initialized', () => {
+    function initSelect2() {
+        const $modal = window.jQuery ? jQuery('#unitModal') : null;
+        if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') {
+            // Select2 belum tersedia; lewati tanpa error
+            return;
+        }
+        // Temukan root komponen Livewire terdekat (hindari komponen lain seperti navigation)
+        const compRoot = document.getElementById('unitModal')?.closest('[wire\\:id]');
+        const comp = (compRoot && window.Livewire && typeof Livewire.find === 'function')
+            ? Livewire.find(compRoot.getAttribute('wire:id'))
+            : null;
+        // Karyawan
+        const $k = jQuery('#karyawan_id');
+        if ($k.length && !$k.hasClass('select2-hidden-accessible')) {
+            $k.select2({ width: '100%', dropdownParent: $modal });
+            $k.on('change', function () {
+                const val = jQuery(this).val();
+                comp && comp.set('karyawan_id', val);
+            });
+        }
+        // Type Unit
+        const $t = jQuery('#type_unit_id');
+        if ($t.length && !$t.hasClass('select2-hidden-accessible')) {
+            $t.select2({ width: '100%', dropdownParent: $modal });
+            $t.on('change', function () {
+                const val = jQuery(this).val();
+                comp && comp.set('type_unit_id', val);
+            });
+        }
+    }
+
+    function destroySelect2() {
+        if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') return;
+        const $k = jQuery('#karyawan_id');
+        const $t = jQuery('#type_unit_id');
+        if ($k.length && $k.hasClass('select2-hidden-accessible')) $k.select2('destroy');
+        if ($t.length && $t.hasClass('select2-hidden-accessible')) $t.select2('destroy');
+    }
+
+    // Event dari Livewire untuk open/close modal
+    if (window.Livewire && typeof Livewire.on === 'function') {
+        Livewire.on('unit-modal-opened', () => {
+            // Sedikit tunda untuk memastikan DOM siap
+            setTimeout(initSelect2, 50);
+        });
+        Livewire.on('unit-modal-closed', () => {
+            destroySelect2();
+        });
+    }
+
+    // Re-init setelah DOM Livewire diproses (mis. setelah validasi/gagal simpan)
+    if (window.Livewire && typeof Livewire.hook === 'function') {
+        Livewire.hook('message.processed', () => {
+            const modalVisible = document.getElementById('unitModal');
+            if (modalVisible) {
+                setTimeout(initSelect2, 50);
+            }
+        });
+    }
+});
+</script>

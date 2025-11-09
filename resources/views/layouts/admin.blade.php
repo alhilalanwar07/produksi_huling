@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="{{ url('/') }}/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="{{ url('/') }}/assets/css/plugins.min.css" />
     <link rel="stylesheet" href="{{ url('/') }}/assets/css/kaiadmin.min.css" />
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="icon" type="image/png" href="{{ url('/') }}/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="{{ url('/') }}/favicon.svg" />
@@ -120,6 +122,8 @@
     <script src="{{ url('/') }}/assets/js/plugin/sweetalert/sweetalert.min.js" data-navigate-track></script>
     <script src="{{ url('/') }}/assets/js/kaiadmin.min.js" data-navigate-track></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" data-navigate-track></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     @stack('script')
     @stack('scripts')
