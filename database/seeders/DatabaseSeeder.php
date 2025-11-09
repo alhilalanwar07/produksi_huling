@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             PendidikanSeeder::class,
             AgamaSeeder::class,
             KaryawanSeeder::class,
+            TongkangSeeder::class,
         ]);
     }
 }
