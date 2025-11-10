@@ -27,4 +27,6 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Volt::route('time-sheat', 'time-sheat')->name('admin.time-sheat');
     Volt::route('fuel', 'fuel')->name('admin.fuel');
     Volt::route('breakdown', 'breakdown')->name('admin.unit.breakdown');
+    Volt::route('standby', 'standby')->name('admin.unit.standby');
+    Volt::route('barging', 'barging')->name('admin.barging');
 });

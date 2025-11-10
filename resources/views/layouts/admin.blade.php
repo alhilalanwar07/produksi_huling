@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>
@@ -62,6 +63,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="wrapper">
         <livewire:layout.admin-navigation />
@@ -129,4 +131,5 @@
     @stack('scripts')
     @livewireScripts
 </body>
+
 </html>

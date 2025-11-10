@@ -1,8 +1,12 @@
 <?php
 
+// Komponen Livewire Volt untuk halaman Standby.
+// Menjaga konsistensi struktur, penamaan, layout, dan gaya dengan halaman Fuel.
+// Fitur: pencarian, sorting, pagination, filter, CRUD, validasi, dan tampilan responsif.
+
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
-use App\Models\{Fuel, Unit, Karyawan};
+use App\Models\{Standby, Unit};
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,19 +22,15 @@ new class extends Component {
 
     // Filter
     public $filterDate = '';
-    public $filterUnitId = null;
+    public $filterUnitId = null; // konsisten dengan halaman Fuel, gunakan id unit (UI)
 
-    // Form fields
+    // Form fields (UI): unit_id menggunakan id Unit; akan di-map ke nomor_lambung ketika simpan
     public $tanggal = '';
     public $unit_id = null;
-    public $karyawan_id = null;
-    public $jumlah_pengisian = '';
-    // KM menggantikan HM pada antarmuka; tetap dipetakan ke kolom 'hm' di DB
-    public $km = '';
+    public $alasan = '';
 
     // Dropdown data
     public $units = [];
-    public $drivers = [];
 
     // Modal state
     public $editingId = null;
@@ -38,6 +38,7 @@ new class extends Component {
     public $deletingId = null;
     public $showDeleteModal = false;
 
+    // Inisialisasi dropdown dengan cache (TTL 2 menit)
     public function mount()
     {
         $this->loadDropdowns();
@@ -45,18 +46,11 @@ new class extends Component {
 
     private function loadDropdowns(): void
     {
-        // Cache dropdown untuk mengurangi query berulang (TTL 2 menit)
-        $this->units = Cache::remember('fuel_units_dropdown', 120, function () {
+        $this->units = Cache::remember('standby_units_dropdown', 120, function () {
             return Unit::query()
                 ->with('typeUnit:id,jenis_alat')
                 ->orderBy('nomor_lambung')
                 ->get(['id', 'nomor_lambung', 'type_unit_id']);
-        });
-
-        $this->drivers = Cache::remember('fuel_drivers_dropdown', 120, function () {
-            return Karyawan::query()
-                ->orderBy('nama_karyawan')
-                ->get(['id', 'nama_karyawan']);
         });
     }
 
@@ -66,7 +60,7 @@ new class extends Component {
         $this->resetPage();
     }
 
-    // Sorting
+    // Sorting toggle ASC/DESC
     public function sortBy($field)
     {
         if ($this->sortField === $field) {
@@ -83,92 +77,83 @@ new class extends Component {
     {
         $this->resetForm();
         $this->showModal = true;
-        $this->dispatch('fuel-modal-opened');
+        $this->dispatch('standby-modal-opened');
     }
 
     public function edit($id)
     {
         try {
-            $f = Fuel::findOrFail($id);
+            $s = Standby::findOrFail($id);
             $this->editingId = $id;
-            $this->tanggal = optional($f->tanggal)->format('Y-m-d');
-            $this->unit_id = $f->unit_id;
-            $this->karyawan_id = $f->karyawan_id;
-            $this->jumlah_pengisian = number_format((float)$f->jumlah_pengisian, 2, '.', '');
-            // KM pada UI kini menggunakan kolom 'km' di DB
-            $this->km = $f->km;
+            $this->tanggal = optional($s->tanggal)->format('Y-m-d');
+            // Map dari nomor_lambung (DB) ke id unit (UI)
+            $this->unit_id = optional($s->unit)->id;
+            $this->alasan = $s->alasan;
             $this->showModal = true;
-            $this->dispatch('fuel-modal-opened');
+            $this->dispatch('standby-modal-opened');
         } catch (ModelNotFoundException $e) {
-            session()->flash('error', 'Data fuel tidak ditemukan.');
+            session()->flash('error', 'Data standby tidak ditemukan.');
         } catch (\Throwable $e) {
-            Log::error('Gagal memuat fuel: ' . $e->getMessage());
-            session()->flash('error', 'Terjadi kesalahan saat memuat data fuel.');
+            Log::error('Gagal memuat standby: ' . $e->getMessage());
+            session()->flash('error', 'Terjadi kesalahan saat memuat data standby.');
         }
     }
 
     public function save()
     {
-        // Validasi KM (menggantikan HM pada UI), akan dipetakan ke 'hm' saat simpan
+        // Validasi form (UI). unit_id menggunakan id Unit, bukan nomor_lambung.
         $validated = $this->validate(
             [
                 'tanggal' => ['required', 'date'],
                 'unit_id' => ['required', 'exists:units,id'],
-                'karyawan_id' => ['required', 'exists:karyawans,id'],
-                'jumlah_pengisian' => ['required', 'numeric', 'min:0'],
-                'km' => ['required', 'integer', 'min:0'],
+                'alasan'  => ['required', 'string'],
             ],
             [
                 'tanggal.required' => 'Tanggal wajib diisi.',
                 'tanggal.date' => 'Format tanggal tidak valid.',
                 'unit_id.required' => 'Unit wajib dipilih.',
                 'unit_id.exists' => 'Unit tidak ditemukan.',
-                'karyawan_id.required' => 'Karyawan wajib dipilih.',
-                'karyawan_id.exists' => 'Karyawan tidak ditemukan.',
-                'jumlah_pengisian.required' => 'Jumlah pengisian wajib diisi.',
-                'jumlah_pengisian.numeric' => 'Jumlah pengisian harus angka.',
-                'jumlah_pengisian.min' => 'Jumlah pengisian minimal 0.',
-                'km.required' => 'KM wajib diisi.',
-                'km.integer' => 'KM harus bilangan bulat.',
-                'km.min' => 'KM minimal 0.',
+                'alasan.required' => 'Alasan wajib diisi.',
+                'alasan.string' => 'Alasan harus berupa teks.',
             ]
         );
 
         try {
-            if ($this->editingId) {
-                $payload = [
-                    'tanggal' => $validated['tanggal'],
-                    'unit_id' => $validated['unit_id'],
-                    'karyawan_id' => $validated['karyawan_id'],
-                    'jumlah_pengisian' => $validated['jumlah_pengisian'],
-                    'km' => $validated['km'],
-                ];
-                Fuel::findOrFail($this->editingId)->update($payload);
-                session()->flash('message', 'Data fuel berhasil diperbarui.');
-            } else {
-                $payload = [
-                    'tanggal' => $validated['tanggal'],
-                    'unit_id' => $validated['unit_id'],
-                    'karyawan_id' => $validated['karyawan_id'],
-                    'jumlah_pengisian' => $validated['jumlah_pengisian'],
-                    'km' => $validated['km'],
-                ];
-                Fuel::create($payload);
-                session()->flash('message', 'Data fuel berhasil ditambahkan.');
+            // Map ke nomor_lambung untuk disimpan ke kolom standby.unit_id (string)
+            $unit = Unit::find($validated['unit_id']);
+            $unitNomorLambung = $unit ? $unit->nomor_lambung : null;
+
+            if (!$unitNomorLambung) {
+                throw new \RuntimeException('Unit tidak valid untuk penyimpanan.');
             }
+
+            $payload = [
+                'tanggal' => $validated['tanggal'],
+                'unit_id' => $unitNomorLambung,
+                'alasan'  => $validated['alasan'],
+            ];
+
+            if ($this->editingId) {
+                Standby::findOrFail($this->editingId)->update($payload);
+                session()->flash('message', 'Data standby berhasil diperbarui.');
+            } else {
+                Standby::create($payload);
+                session()->flash('message', 'Data standby berhasil ditambahkan.');
+            }
+
             $this->resetForm();
             $this->showModal = false;
-            $this->dispatch('fuel-modal-closed');
+            $this->dispatch('standby-modal-closed');
         } catch (\Throwable $e) {
-            Log::error('Gagal menyimpan fuel: ' . $e->getMessage());
-            session()->flash('error', 'Terjadi kesalahan saat menyimpan data.');
+            Log::error('Gagal menyimpan standby: ' . $e->getMessage());
+            session()->flash('error', 'Terjadi kesalahan saat menyimpan data standby.');
         }
     }
 
     public function closeModal()
     {
         $this->showModal = false;
-        $this->dispatch('fuel-modal-closed');
+        $this->dispatch('standby-modal-closed');
     }
 
     public function confirmDelete($id)
@@ -181,15 +166,15 @@ new class extends Component {
     {
         try {
             if ($this->deletingId) {
-                Fuel::findOrFail($this->deletingId)->delete();
-                session()->flash('message', 'Data fuel berhasil dihapus.');
+                Standby::findOrFail($this->deletingId)->delete();
+                session()->flash('message', 'Data standby berhasil dihapus.');
                 $this->showDeleteModal = false;
                 $this->deletingId = null;
                 $this->resetPage();
             }
         } catch (\Throwable $e) {
-            Log::error('Gagal menghapus fuel: ' . $e->getMessage());
-            session()->flash('error', 'Terjadi kesalahan saat menghapus data.');
+            Log::error('Gagal menghapus standby: ' . $e->getMessage());
+            session()->flash('error', 'Terjadi kesalahan saat menghapus data standby.');
         }
     }
 
@@ -198,9 +183,7 @@ new class extends Component {
         $this->editingId = null;
         $this->tanggal = '';
         $this->unit_id = null;
-        $this->karyawan_id = null;
-        $this->jumlah_pengisian = '';
-        $this->km = '';
+        $this->alasan = '';
     }
 
     public function closeDeleteModal()
@@ -211,35 +194,31 @@ new class extends Component {
 
     public function with(): array
     {
-        // Query utama dengan filter dan sorting, termasuk mapping sort KM->HM
-        $query = Fuel::query()
-            ->with(['unit.typeUnit', 'karyawan'])
+        // Query utama dengan filter, pencarian, dan sorting.
+        $query = Standby::query()
+            ->with(['unit.typeUnit'])
             ->when($this->search, function ($q) {
-                $q->whereHas('unit', function ($uq) {
-                    $uq->where('nomor_lambung', 'like', '%' . $this->search . '%');
-                })->orWhereHas('karyawan', function ($kq) {
-                    $kq->where('nama_karyawan', 'like', '%' . $this->search . '%');
-                });
+                $q->where('alasan', 'like', '%' . $this->search . '%')
+                    ->orWhereHas('unit', function ($uq) {
+                        $uq->where('nomor_lambung', 'like', '%' . $this->search . '%');
+                    });
             })
-            ->when($this->filterUnitId, fn($q) => $q->where('unit_id', $this->filterUnitId))
+            ->when($this->filterUnitId, fn($q) => $q->whereHas('unit', fn($uq) => $uq->where('id', $this->filterUnitId)))
             ->when($this->filterDate, fn($q) => $q->whereDate('tanggal', $this->filterDate));
 
-        // Sorting support termasuk nomor_lambung via join
+        // Sorting support termasuk nomor_lambung via join ke units
         if ($this->sortField === 'nomor_lambung') {
-            $query->leftJoin('units', 'units.id', '=', 'fuel.unit_id')
+            $query->leftJoin('units', 'units.nomor_lambung', '=', 'standby.unit_id')
                 ->orderBy('units.nomor_lambung', $this->sortDirection)
-                ->select('fuel.*');
-        } elseif ($this->sortField === 'km') {
-            // KM pada UI di-sort berdasarkan kolom 'km' di DB
-            $query->orderBy('km', $this->sortDirection);
+                ->select('standby.*');
         } else {
             $query->orderBy($this->sortField, $this->sortDirection);
         }
 
-        $fuels = $query->paginate($this->perPage);
+        $standbys = $query->paginate($this->perPage);
 
         return [
-            'fuels' => $fuels,
+            'standbys' => $standbys,
         ];
     }
 }; ?>
@@ -263,7 +242,7 @@ new class extends Component {
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="#">Data Fuel</a>
+                    <a href="#">Data Standby</a>
                 </li>
             </ul>
         </div>
@@ -272,9 +251,9 @@ new class extends Component {
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h4 class="card-title">Manajemen Data Fuel</h4>
+                            <h4 class="card-title">Manajemen Data Standby</h4>
                             <button wire:click="create" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Tambah Fuel
+                                <i class="fas fa-plus"></i> Tambah Standby
                             </button>
                         </div>
                     </div>
@@ -301,7 +280,7 @@ new class extends Component {
                         <!-- Search, PerPage, Filters -->
                         <div class="row mb-3 align-items-end">
                             <div class="col-md-4 mb-2">
-                                <input type="text" class="form-control" placeholder="Cari (lambung/driver)..."
+                                <input type="text" class="form-control" placeholder="Cari (lambung/alasan)..."
                                     wire:model.live.debounce.300ms="search">
                             </div>
                             <div class="col-md-2 mb-2">
@@ -341,18 +320,8 @@ new class extends Component {
                                             @endif
                                         </th>
                                         <th>Type Unit</th>
-                                        <th style="cursor: pointer;" wire:click="sortBy('karyawan_id')">Karyawan
-                                            @if ($sortField === 'karyawan_id')
-                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                                            @endif
-                                        </th>
-                                        <th style="cursor: pointer;" wire:click="sortBy('jumlah_pengisian')">Jumlah Pengisian (L)
-                                            @if ($sortField === 'jumlah_pengisian')
-                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
-                                            @endif
-                                        </th>
-                                        <th style="cursor: pointer;" wire:click="sortBy('km')">KM
-                                            @if ($sortField === 'km')
+                                        <th style="cursor: pointer;" wire:click="sortBy('alasan')">Alasan
+                                            @if ($sortField === 'alasan')
                                             <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
                                             @endif
                                         </th>
@@ -360,26 +329,24 @@ new class extends Component {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($fuels as $f)
+                                    @forelse ($standbys as $s)
                                     <tr>
-                                        <td>{{ optional($f->tanggal)->format('d/m/Y') }}</td>
-                                        <td>{{ optional($f->unit)->nomor_lambung }}</td>
-                                        <td>{{ optional(optional($f->unit)->typeUnit)->jenis_alat }}</td>
-                                        <td>{{ optional($f->karyawan)->nama_karyawan }}</td>
-                                        <td>{{ number_format((float)$f->jumlah_pengisian, 2, ',', '.') }}</td>
-                                        <td>{{ number_format((int)$f->km, 0, '.', '.') }}</td>
+                                        <td>{{ optional($s->tanggal)->format('d/m/Y') }}</td>
+                                        <td>{{ optional($s->unit)->nomor_lambung }}</td>
+                                        <td>{{ optional(optional($s->unit)->typeUnit)->jenis_alat }}</td>
+                                        <td>{{ $s->alasan }}</td>
                                         <td class="text-right">
-                                            <button class="btn btn-warning btn-sm mb-1" wire:click="edit({{ $f->id }})">
+                                            <button class="btn btn-warning btn-sm mb-1" wire:click="edit({{ $s->id }})">
                                                 <i class="fa fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-danger btn-sm" wire:click="confirmDelete({{ $f->id }})">
+                                            <button class="btn btn-danger btn-sm" wire:click="confirmDelete({{ $s->id }})">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">Tidak ada data.</td>
+                                        <td colspan="5" class="text-center">Tidak ada data.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -388,7 +355,7 @@ new class extends Component {
 
                         <!-- Pagination -->
                         <div class="mt-3">
-                            {{ $fuels->links() }}
+                            {{ $standbys->links() }}
                         </div>
                     </div>
                 </div>
@@ -398,11 +365,11 @@ new class extends Component {
 
     <!-- Modal Tambah/Edit -->
     @if($showModal)
-    <div class="modal fade show" id="fuelModal" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal fade show" id="standbyModal" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ $editingId ? 'Edit' : 'Tambah' }} Fuel</h5>
+                    <h5 class="modal-title">{{ $editingId ? 'Edit' : 'Tambah' }} Standby</h5>
                     <button type="button" class="close" aria-label="Close" wire:click="closeModal">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -413,7 +380,7 @@ new class extends Component {
                             <label for="tanggal">Tanggal</label>
                             <input type="date" id="tanggal" class="form-control" wire:model.live="tanggal" placeholder="Pilih tanggal">
                             @error('tanggal') <small class="text-danger">{{ $message }}</small> @enderror
-                            <small class="form-text text-muted">Tanggal pengisian bahan bakar.</small>
+                            <small class="form-text text-muted">Tanggal standby unit.</small>
                         </div>
                         <div class="form-group">
                             <label for="unit_id">Unit (Nomor Lambung — Tipe Unit)</label>
@@ -426,51 +393,35 @@ new class extends Component {
                                 </select>
                             </div>
                             @error('unit_id') <small class="text-danger">{{ $message }}</small> @enderror
-                            <small class="form-text text-muted">Pilih unit berdasarkan nomor lambung.</small>
-                        </div>
-                        <div class="form-group" wire:ignore>
-                            <label for="karyawan_id">Karyawan (Pengisi)</label>
-                            <select id="karyawan_id" class="form-control" wire:model="karyawan_id" data-selected="{{ $karyawan_id }}">
-                                <option value="">Pilih karyawan</option>
-                                @foreach ($drivers as $d)
-                                <option value="{{ $d->id }}">{{ $d->nama_karyawan }}</option>
-                                @endforeach
-                            </select>
-                            @error('karyawan_id') <small class="text-danger">{{ $message }}</small> @enderror
-                            <small class="form-text text-muted">Pilih karyawan yang melakukan pengisian.</small>
+                            <small class="form-text text-muted">Pilih unit berdasarkan nomor lambung; disimpan sebagai nomor lambung.</small>
                         </div>
                         <div class="form-group">
-                            <label for="jumlah_pengisian">Jumlah Pengisian (Liter)</label>
-                            <input type="number" step="0.01" min="0" id="jumlah_pengisian" class="form-control" wire:model.live="jumlah_pengisian" placeholder="Masukkan jumlah liter">
-                            @error('jumlah_pengisian') <small class="text-danger">{{ $message }}</small> @enderror
-                            <small class="form-text text-muted">Masukkan jumlah bahan bakar (liter), contoh: 125.50.</small>
+                            <label for="alasan">Alasan</label>
+                            <textarea id="alasan" class="form-control" rows="3" wire:model.live="alasan" placeholder="Masukkan alasan standby"></textarea>
+                            @error('alasan') <small class="text-danger">{{ $message }}</small> @enderror
+                            <small class="form-text text-muted">Deskripsikan alasan unit dalam kondisi standby.</small>
                         </div>
-                        <div class="form-group">
-                            <label for="km">KM (Kilometer)</label>
-                            <input type="number" step="1" min="0" id="km" class="form-control" wire:model.live="km" placeholder="Masukkan nilai KM">
-                            @error('km') <small class="text-danger">{{ $message }}</small> @enderror
-                            <small class="form-text text-muted">Input odometer (KM) saat pengisian.</small>
-                        </div>
+
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" wire:click="closeModal">Batal</button>
-                    <button type="button" class="btn btn-primary" wire:click="save">Simpan</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </div>
         </div>
     </div>
     @endif
 
-    <!-- Modal Hapus -->
+    <!-- Modal Konfirmasi Hapus -->
     @if($showDeleteModal)
-    <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
-        <div class="modal-dialog">
+    <div class="modal fade show" id="deleteStandbyModal" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">Konfirmasi Hapus</h5>
                     <button type="button" class="close text-white" wire:click="closeDeleteModal">
-                        <span>&times;</span>
+                        <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -478,7 +429,7 @@ new class extends Component {
                         <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
                     </div>
                     <p class="text-center">
-                        Apakah Anda yakin ingin menghapus data fuel ini?<br>
+                        Apakah Anda yakin ingin menghapus data standby ini?<br>
                         <strong>Data yang sudah dihapus tidak dapat dikembalikan.</strong>
                     </p>
                 </div>
@@ -494,97 +445,84 @@ new class extends Component {
         </div>
     </div>
     @endif
+</div>
 
-    <!-- Inisialisasi Select2 untuk dropdown di modal Fuel (Unit & Karyawan) -->
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            function initSelect2() {
-                const $modal = window.jQuery ? jQuery('#fuelModal') : null;
-                if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') {
-                    return; // Select2 not available
-                }
-                // Find nearest Livewire component root
-                const compRoot = document.getElementById('fuelModal')?.closest('[wire\\:id]');
+<!-- Inisialisasi Select2 dan sinkronisasi dengan Livewire -->
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        function initSelect2() {
+            const $modal = window.jQuery ? jQuery('#standbyModal') : null;
+            if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') {
+                return; // Select2 not available
+            }
+            // Find nearest Livewire component root
+            const compRoot = document.getElementById('standbyModal')?.closest('[wire\\:id]');
+            const comp = (compRoot && window.Livewire && typeof Livewire.find === 'function') ?
+                Livewire.find(compRoot.getAttribute('wire:id')) :
+                null;
+
+            // Unit
+            const $u = jQuery('#unit_id');
+            if ($u.length && !$u.hasClass('select2-hidden-accessible')) {
+                $u.select2({
+                    width: '100%',
+                    dropdownParent: $modal,
+                    placeholder: 'Pilih unit',
+                    allowClear: true
+                });
+                $u.on('change', function() {
+                    const val = jQuery(this).val();
+                    comp && comp.set('unit_id', val);
+                });
+            }
+        }
+
+        // Initialize Select2 for filter Unit in toolbar
+        function initSelect2Filter() {
+            if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') return;
+            const $f = jQuery('#filter_unit_id');
+            if ($f.length) {
+                // Find nearest Livewire component root from filter element
+                const compRoot = $f.get(0).closest('[wire\\:id]');
                 const comp = (compRoot && window.Livewire && typeof Livewire.find === 'function') ?
                     Livewire.find(compRoot.getAttribute('wire:id')) :
                     null;
 
-                // Unit
-                const $u = jQuery('#unit_id');
-                if ($u.length && !$u.hasClass('select2-hidden-accessible')) {
-                    $u.select2({
+                if (!$f.hasClass('select2-hidden-accessible')) {
+                    $f.select2({
                         width: '100%',
-                        dropdownParent: $modal
+                        placeholder: 'Semua unit',
+                        allowClear: true
                     });
-                    $u.on('change', function() {
+                    $f.on('change', function() {
                         const val = jQuery(this).val();
-                        comp && comp.set('unit_id', val);
-                    });
-                }
-
-                // Karyawan
-                const $k = jQuery('#karyawan_id');
-                if ($k.length && !$k.hasClass('select2-hidden-accessible')) {
-                    $k.select2({
-                        width: '100%',
-                        dropdownParent: $modal
-                    });
-                    $k.on('change', function() {
-                        const val = jQuery(this).val();
-                        comp && comp.set('karyawan_id', val);
+                        comp && comp.set('filterUnitId', val);
                     });
                 }
             }
+        }
 
-            // Initialize Select2 for filter Unit in toolbar
-            function initSelect2Filter() {
-                if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') return;
-                const $f = jQuery('#filter_unit_id');
-                if ($f.length) {
-                    // Find nearest Livewire component root from filter element
-                    const compRoot = $f.get(0).closest('[wire\\:id]');
-                    const comp = (compRoot && window.Livewire && typeof Livewire.find === 'function') ?
-                        Livewire.find(compRoot.getAttribute('wire:id')) :
-                        null;
+        function destroySelect2() {
+            if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') return;
+            const $u = jQuery('#unit_id');
+            if ($u.length && $u.hasClass('select2-hidden-accessible')) $u.select2('destroy');
+        }
 
-                    if (!$f.hasClass('select2-hidden-accessible')) {
-                        $f.select2({
-                            width: '100%',
-                            placeholder: 'Semua unit',
-                            allowClear: true
-                        });
-                        $f.on('change', function() {
-                            const val = jQuery(this).val();
-                            comp && comp.set('filterUnitId', val);
-                        });
-                    }
-                }
-            }
+        if (window.Livewire && typeof Livewire.on === 'function') {
+            Livewire.on('standby-modal-opened', () => setTimeout(initSelect2, 50));
+            Livewire.on('standby-modal-closed', () => destroySelect2());
+        }
 
-            function destroySelect2() {
-                if (!window.jQuery || typeof jQuery.fn.select2 === 'undefined') return;
-                const $u = jQuery('#unit_id');
-                const $k = jQuery('#karyawan_id');
-                if ($u.length && $u.hasClass('select2-hidden-accessible')) $u.select2('destroy');
-                if ($k.length && $k.hasClass('select2-hidden-accessible')) $k.select2('destroy');
-            }
+        if (window.Livewire && typeof Livewire.hook === 'function') {
+            Livewire.hook('message.processed', () => {
+                const modalVisible = document.getElementById('standbyModal');
+                if (modalVisible) setTimeout(initSelect2, 50);
+                // Re-init filter Unit after Livewire processes DOM
+                setTimeout(initSelect2Filter, 50);
+            });
+        }
 
-            if (window.Livewire && typeof Livewire.on === 'function') {
-                Livewire.on('fuel-modal-opened', () => setTimeout(initSelect2, 50));
-                Livewire.on('fuel-modal-closed', () => destroySelect2());
-            }
-
-            if (window.Livewire && typeof Livewire.hook === 'function') {
-                Livewire.hook('message.processed', () => {
-                    const modalVisible = document.getElementById('fuelModal');
-                    if (modalVisible) setTimeout(initSelect2, 50);
-                    // Re-init filter Unit after Livewire processes DOM
-                    setTimeout(initSelect2Filter, 50);
-                });
-            }
-
-            // Initial filter Unit initialization when page ready
-            setTimeout(initSelect2Filter, 0);
-        });
-    </script>
-</div>
+        // Initial filter Unit initialization when page ready
+        setTimeout(initSelect2Filter, 0);
+    });
+</script>

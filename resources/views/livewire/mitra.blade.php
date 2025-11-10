@@ -1,9 +1,11 @@
 <?php
 
+// Perhitungan total retase kini diambil dari tabel bargings berdasarkan site_id
 use App\Models\Deposit;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use App\Models\Site;
+use App\Models\Barging;
 use Illuminate\Support\Facades\Auth;
 
 new class extends Component {
@@ -22,7 +24,8 @@ new class extends Component {
     // Properties untuk modal Deposit
     public $depositSiteId = null;
     public $depositModal = false;
-    public $aksiRetase = 'tambah'; // tambah | kurangi
+    public $depositSiteName = '';
+    public $sisaRetase = 0;
     public $aksiDeposit = 'tambah'; // tambah | kurangi
     public $depositJumlahRetase = 0;
     public $depositJumlahDeposit = 0;
@@ -128,8 +131,17 @@ new class extends Component {
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
+        // Ambil total retase dari tabel bargings per site untuk seluruh site di halaman ini
+        $siteIds = collect($sites->items())->pluck('id');
+        $retaseTotals = Barging::query()
+            ->whereIn('site_id', $siteIds)
+            ->selectRaw('site_id, COALESCE(SUM(retase), 0) as total_retase')
+            ->groupBy('site_id')
+            ->pluck('total_retase', 'site_id');
+
         return [
             'sites' => $sites,
+            'retaseTotals' => $retaseTotals,
         ];
     }
 
@@ -137,8 +149,10 @@ new class extends Component {
     public function openDepositModal($siteId)
     {
         $this->depositSiteId = $siteId;
+        $this->depositSiteName = optional(Site::find($siteId))->nama_site ?? '';
+        $this->sisaRetase = optional(Site::find($siteId))->sisa_retase ?? 0;
         $this->aksiDeposit = 'tambah';
-        $this->depositJumlahRetase = 0;
+        $this->depositJumlahRetase = 0; // tetap ada untuk pencatatan retase tambahan jika diperlukan
         $this->depositJumlahDeposit = 0;
         $this->depositModal = true;
     }
@@ -146,13 +160,10 @@ new class extends Component {
     public function saveDeposit()
     {
         $this->validate([
-            'aksiRetase' => 'required|in:tambah,kurangi',
             'aksiDeposit' => 'required|in:tambah,kurangi',
             'depositJumlahRetase' => 'nullable|integer|min:0',
             'depositJumlahDeposit' => 'nullable|integer|min:0',
         ], [
-            'aksiRetase.required' => 'Pilih aksi retase.',
-            'aksiRetase.in' => 'Aksi retase tidak valid.',
             'aksiDeposit.required' => 'Pilih aksi deposit.',
             'aksiDeposit.in' => 'Aksi deposit tidak valid.',
             'depositJumlahRetase.integer' => 'Jumlah retase harus berupa angka bulat.',
@@ -168,15 +179,12 @@ new class extends Component {
         }
 
         $site = Site::findOrFail($this->depositSiteId);
-
-        $plannedRetase = $this->aksiRetase === 'tambah'
-            ? (int)$this->depositJumlahRetase
-            : -(int)$this->depositJumlahRetase;
+        // Pengurangan retase tidak lagi didukung; hanya penambahan
+        $plannedRetase = (int) $this->depositJumlahRetase;
 
         $plannedDeposit = $this->aksiDeposit === 'tambah'
             ? (int)$this->depositJumlahDeposit
             : -(int)$this->depositJumlahDeposit;
-
         $newTotalRetase = $site->total_retase + $plannedRetase;
         $newTotalDeposit = $site->total_deposit + $plannedDeposit;
 
@@ -197,6 +205,7 @@ new class extends Component {
             return;
         }
 
+        // Simpan perubahan deposit/retase tambahan
         Deposit::create([
             'site_id' => $this->depositSiteId,
             'jumlah_retase' => $plannedRetase,
@@ -206,7 +215,6 @@ new class extends Component {
         session()->flash('message', 'Perubahan deposit/retase berhasil disimpan.');
         $this->depositModal = false;
         $this->depositSiteId = null;
-        $this->aksiRetase = 'tambah';
         $this->aksiDeposit = 'tambah';
         $this->depositJumlahRetase = 0;
         $this->depositJumlahDeposit = 0;
@@ -306,7 +314,7 @@ new class extends Component {
                                     @forelse($sites as $site)
                                     <tr>
                                         <td class="text-uppercase">{{ $site->nama_site }}</td>
-                                        <td class="text-center">{{ number_format($site->total_retase, 0, ',', '.') }}</td>
+                                        <td class="text-center">{{ number_format((float)($retaseTotals[$site->id] ?? 0), 2, ',', '.') }}</td>
                                         <td class="text-center">{{ number_format($site->total_deposit, 0, ',', '.') }}</td>
                                         <td class="text-center">{{ number_format($site->sisa_retase, 0, ',', '.') }}</td>
                                         <td class="text-center">
@@ -436,7 +444,7 @@ new class extends Component {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Kelola Deposit</h5>
+                    <h5 class="modal-title">Kelola Deposit {{ $depositSiteName }}</h5>
                     <button type="button" class="close text-white" wire:click="$set('depositModal', false)">
                         <span>&times;</span>
                     </button>
@@ -447,43 +455,9 @@ new class extends Component {
                         {{ session('error') }}
                     </div>
                     @endif
-                    <div class="form-group">
-                        <label>Aksi Retase</label>
-                        <div class="d-flex">
-                            <div class="form-check mr-3">
-                                <input class="form-check-input" type="radio" id="aksi_retase_tambah" value="tambah" wire:model="aksiRetase">
-                                <label class="form-check-label" for="aksi_retase_tambah">Tambah</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="aksi_retase_kurangi" value="kurangi" wire:model="aksiRetase">
-                                <label class="form-check-label" for="aksi_retase_kurangi">Kurangi</label>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="depositJumlahRetase">Jumlah Retase</label>
-                        <input type="number" id="depositJumlahRetase" class="form-control @error('depositJumlahRetase') is-invalid @enderror" wire:model="depositJumlahRetase" min="0">
-                        @error('depositJumlahRetase')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <small class="text-muted">Isi angka retase untuk ditambah/dikurangi.</small>
-                    </div>
-
-                    <hr>
-
-                    <div class="form-group">
-                        <label>Aksi Deposit</label>
-                        <div class="d-flex">
-                            <div class="form-check mr-3">
-                                <input class="form-check-input" type="radio" id="aksi_deposit_tambah" value="tambah" wire:model="aksiDeposit">
-                                <label class="form-check-label" for="aksi_deposit_tambah">Tambah</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" id="aksi_deposit_kurangi" value="kurangi" wire:model="aksiDeposit">
-                                <label class="form-check-label" for="aksi_deposit_kurangi">Kurangi</label>
-                            </div>
-                        </div>
+                    <div class="alert alert-info">
+                        <strong>Sisa Retase:</strong> {{ number_format($sisaRetase, 0, ',', '.') }}
                     </div>
 
                     <div class="form-group">

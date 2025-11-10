@@ -23,9 +23,10 @@ class Site extends Model
         return $this->hasMany(Deposit::class);
     }
 
-    public function getTotalRetaseAttribute(): int
+    public function getTotalRetaseAttribute(): float
     {
-        return (int) $this->deposits()->sum('jumlah_retase');
+        // Total retase kini bersumber dari tabel bargings berdasarkan site_id
+        return (float) Barging::where('site_id', $this->id)->sum('retase');
     }
 
     public function getTotalDepositAttribute(): int
@@ -33,8 +34,9 @@ class Site extends Model
         return (int) $this->deposits()->sum('jumlah_deposit');
     }
 
-    public function getSisaRetaseAttribute(): int
+    public function getSisaRetaseAttribute(): float
     {
-        return $this->total_retase - $this->total_deposit;
+        // Sisa retase dihitung dari total retase barging dikurangi total deposit
+        return (float) ($this->total_retase - $this->total_deposit);
     }
 }

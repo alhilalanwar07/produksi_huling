@@ -137,8 +137,8 @@ new class extends Component {
                             </ul>
                         </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" >
+                    <li class="nav-item {{ Route::is('admin.barging') ? 'active text-info' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.barging') }}" >
                             <i class="fas fa-ship"></i>
                             <p>Barging</p>
                         </a>
@@ -174,9 +174,9 @@ new class extends Component {
                                         <span class="sub-item">Breakdown</span>
                                     </a>
                                 </li>
-                                <li class="">
-                                    <a class="nav-link" href="#">
-                                        <span class="sub-item">Maintenance</span>
+                                <li class="{{ Route::is('admin.unit.standby') ? 'active text-info' : '' }}">
+                                    <a class="nav-link" href="{{ route('admin.unit.standby') }}">
+                                        <span class="sub-item">Standby</span>
                                     </a>
                                 </li>
                                 <li class="">
