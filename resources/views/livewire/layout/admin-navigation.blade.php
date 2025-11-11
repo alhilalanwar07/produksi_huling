@@ -94,44 +94,44 @@ new class extends Component {
                         <h4 class="text-section">DATA PRODUKSI</h4>
                     </li>
                     <!-- PMS dropdown -->
-                    <li class="nav-item">
-                        <a data-bs-toggle="collapse" href="#pmsSubmenu" class="nav-link" aria-expanded="false">
+                    <li class="nav-item {{ Route::is('admin.pms.*') ? 'active submenu' : '' }}">
+                        <a data-bs-toggle="collapse" href="#pmsSubmenu" class="nav-link" aria-expanded="{{ Route::is('admin.pms.*') ? 'true' : 'false' }}">
                             <i class="fas fa-file-contract"></i>
                             <p>PMS</p>
                             <span class="caret"></span>
                         </a>
-                        <div class="collapse" id="pmsSubmenu">
+                        <div class="collapse {{ Route::is('admin.pms.*') ? 'show' : '' }}" id="pmsSubmenu">
                             <ul class="nav nav-collapse">
-                                <li>
-                                    <a class="nav-link" href="#">
-                                        <span class="sub-item">Sub-menu PMS 1</span>
+                                <li class="{{ Route::is('admin.pms.retase') ? 'active text-info' : '' }}">
+                                    <a class="nav-link" href="{{ route('admin.pms.retase') }}" >
+                                        <span class="sub-item">Hauling Panjang</span>
                                     </a>
                                 </li>
                                 <li>
                                     <a class="nav-link" href="#">
-                                        <span class="sub-item">Sub-menu PMS 2</span>
+                                        <span class="sub-item">Hauling Pendek</span>
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </li>
                     <!-- PERUSDA dropdown -->
-                    <li class="nav-item">
-                        <a data-bs-toggle="collapse" href="#perusdaSubmenu" class="nav-link" aria-expanded="false">
+                    <li class="nav-item {{ Route::is('admin.perusda.*') ? 'active submenu' : '' }}">
+                        <a data-bs-toggle="collapse" href="#perusdaSubmenu" class="nav-link" aria-expanded="{{ Route::is('admin.perusda.*') ? 'true' : 'false' }}">
                             <i class="fas fa-file-alt"></i>
                             <p>PERUSDA</p>
                             <span class="caret"></span>
                         </a>
-                        <div class="collapse" id="perusdaSubmenu">
+                        <div class="collapse {{ Route::is('admin.perusda.*') ? 'show' : '' }}" id="perusdaSubmenu">
                             <ul class="nav nav-collapse">
-                                <li>
-                                    <a class="nav-link" href="#">
-                                        <span class="sub-item">Sub-menu PERUSDA 1</span>
+                                <li class="{{ Route::is('admin.perusda.retase') ? 'active text-info' : '' }}">
+                                    <a class="nav-link" href="{{ route('admin.perusda.retase') }}">
+                                        <span class="sub-item">Hauling Panjang</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a class="nav-link" href="#">
-                                        <span class="sub-item">Sub-menu PERUSDA 2</span>
+                                <li class="{{ Route::is('admin.perusda.hauling-pendek') ? 'active text-info' : '' }}">
+                                    <a class="nav-link" href="{{ route('admin.perusda.hauling-pendek') }}">
+                                        <span class="sub-item">Hauling Pendek</span>
                                     </a>
                                 </li>
                             </ul>

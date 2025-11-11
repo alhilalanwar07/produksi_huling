@@ -463,21 +463,21 @@ new class extends Component {
                         <br>
                         <div class="row">
                             <div class="col-md-12"><h6>Shift 1</h6></div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <div class="form-group">
                                     <label for="shift1_hm_awal">HM Awal</label>
                                     <input type="number" step="0.01" id="shift1_hm_awal" class="form-control @error('shift1_hm_awal') is-invalid @enderror" wire:model.live="shift1_hm_awal" min="0">
                                     @error('shift1_hm_awal')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <div class="form-group">
                                     <label for="shift1_hm_akhir">HM Akhir</label>
                                     <input type="number" step="0.01" id="shift1_hm_akhir" class="form-control @error('shift1_hm_akhir') is-invalid @enderror" wire:model.live="shift1_hm_akhir" min="0">
                                     @error('shift1_hm_akhir')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label for="total_hm">Total HM</label>
                                     <input type="number" step="0.01" id="total_hm" class="form-control @error('total_hm') is-invalid @enderror" wire:model.live="total_hm" min="0" readonly>
@@ -488,21 +488,21 @@ new class extends Component {
                         <br>
                         <div class="row">
                             <div class="col-md-12"><h6>Shift 2</h6></div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <div class="form-group">
                                     <label for="shift2_hm_awal">HM Awal</label>
                                     <input type="number" step="0.01" id="shift2_hm_awal" class="form-control @error('shift2_hm_awal') is-invalid @enderror" wire:model.live="shift2_hm_awal" min="0">
                                     @error('shift2_hm_awal')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <div class="form-group">
                                     <label for="shift2_hm_akhir">HM Akhir</label>
                                     <input type="number" step="0.01" id="shift2_hm_akhir" class="form-control @error('shift2_hm_akhir') is-invalid @enderror" wire:model.live="shift2_hm_akhir" min="0">
                                     @error('shift2_hm_akhir')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label for="total_lembur">Total Lembur</label>
                                     <input type="number" step="0.01" id="total_lembur" class="form-control @error('total_lembur') is-invalid @enderror" wire:model.live="total_lembur" min="0" readonly>
@@ -519,7 +519,7 @@ new class extends Component {
                                     @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="lokasi_id">Lokasi</label>
                                     <div wire:ignore>
@@ -533,7 +533,7 @@ new class extends Component {
                                     @error('lokasi_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="site_id">Mitra/Penerima</label>
                                     <div wire:ignore>
@@ -545,6 +545,14 @@ new class extends Component {
                                         </select>
                                     </div>
                                     @error('site_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            </div>
+                            <!-- total_hm + total_lembur = total_hm_akhir -->
+                             <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="total_hm_akhir">Total HM Akhir</label>
+                                    <input type="number" step="0.01" id="total_hm_akhir" class="form-control @error('total_hm_akhir') is-invalid @enderror" value="{{ number_format($total_hm + $total_lembur, 2, '.', '') }}" min="0" readonly>
+                                    @error('total_hm_akhir')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                         </div>
