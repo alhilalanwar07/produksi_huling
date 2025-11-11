@@ -12,7 +12,7 @@ class MaterialSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach (['ore', 'boulder'] as $name) {
+        foreach (['ORE', 'BOULDER'] as $name) {
             Material::firstOrCreate(['nama_material' => $name]);
         }
     }

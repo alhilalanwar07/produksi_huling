@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\{TimeSheet, Unit, Karyawan, Lokasi, Site};
+use App\Models\{TimeSheet, Unit, Karyawan, Lokasi, Site, TypeUnit, JenisUnit};
 
 class TimeSheetSeeder extends Seeder
 {
@@ -12,11 +12,19 @@ class TimeSheetSeeder extends Seeder
      */
     public function run(): void
     {
-        // Pastikan dependensi dasar tersedia
-        if (Unit::count() === 0) {
-            // Jika unit belum ada, buat minimal beberapa unit menggunakan factory bawaan
-            // Catatan: UnitSeeder biasanya sudah menambahkan unit beserta relasi
-            \App\Models\Unit::factory(5)->create();
+        // Pastikan dependensi dasar tersedia (buat yang wajib terlebih dahulu)
+        if (Site::count() === 0) {
+            foreach (['SITE A', 'SITE B', 'MITRA C'] as $nama) {
+                Site::firstOrCreate(['nama_site' => $nama], ['status' => $nama === 'MITRA C' ? 'MITRA' : 'SITE']);
+            }
+        }
+
+        if (TypeUnit::count() === 0) {
+            TypeUnit::firstOrCreate(['jenis_alat' => 'DUMP TRUCK']);
+        }
+
+        if (JenisUnit::count() === 0) {
+            JenisUnit::firstOrCreate(['nama_jenis' => 'DT']);
         }
 
         if (Karyawan::count() === 0) {
@@ -29,10 +37,9 @@ class TimeSheetSeeder extends Seeder
             }
         }
 
-        if (Site::count() === 0) {
-            foreach (['SITE A', 'SITE B', 'MITRA C'] as $nama) {
-                Site::firstOrCreate(['nama_site' => $nama], ['status' => $nama === 'MITRA C' ? 'MITRA' : 'SITE']);
-            }
+        // Buat unit setelah dependensi tersedia agar FK tidak null
+        if (Unit::count() === 0) {
+            \App\Models\Unit::factory(5)->create();
         }
 
         // Buat 12 data time sheet
